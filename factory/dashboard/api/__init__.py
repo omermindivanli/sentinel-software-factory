@@ -11,6 +11,7 @@ from factory.config.settings import settings
 from factory.dashboard.api.routes import router as api_router
 from factory.dashboard.api.metrics import registry as metrics_registry
 from factory.orchestration.engine import initialize_engine
+from factory.orchestration.state import FactoryState
 from factory.memory.tiered import initialize_tiered_memory
 from factory.tools.mcp_client import initialize_mcp_client
 from factory.tools.registry import get_tool_registry
@@ -63,7 +64,18 @@ async def lifespan(app: FastAPI):
         engine.register_stage_handler("triage", create_agent("triage").execute)
         engine.register_stage_handler("planning", create_agent("architect").execute)
         engine.register_stage_handler("execution", create_agent("worker_pool").execute)
-        engine.register_stage_handler("validation", create_agent("reviewer").execute)
+        validation_agents = [
+            create_agent("reviewer"),
+            create_agent("qa"),
+            create_agent("security"),
+        ]
+
+        async def run_validation(state: FactoryState) -> FactoryState:
+            for agent in validation_agents:
+                state = await agent.execute(state)
+            return state
+
+        engine.register_stage_handler("validation", run_validation)
         engine.register_stage_handler("release", create_agent("release").execute)
         engine.register_stage_handler("document", create_agent("documenter").execute)
         engine.register_stage_handler("monitor", create_agent("monitor").execute)

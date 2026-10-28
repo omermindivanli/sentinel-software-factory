@@ -14,12 +14,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Install Python dependencies
 WORKDIR /app
-COPY pyproject.toml ./
+COPY pyproject.toml README.md ./
 RUN pip install --no-cache-dir -e ".[dev]"
 
 # Install frontend dependencies
 COPY dashboard-frontend/package.json dashboard-frontend/package-lock.json* ./dashboard-frontend/
-RUN cd dashboard-frontend && npm ci
+RUN cd dashboard-frontend && (npm ci 2>/dev/null || npm install)
 
 # Copy source code
 COPY factory/ ./factory/

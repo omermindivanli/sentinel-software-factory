@@ -9,7 +9,6 @@ from uuid import UUID
 import structlog
 
 from langgraph.graph import StateGraph, END
-from langgraph.checkpoint.sqlite import SqliteSaver
 
 from factory.config.settings import settings
 from factory.orchestration.state import (
@@ -81,12 +80,20 @@ class FactoryEngine:
         
         # Human checkpoint callbacks
         self._checkpoint_callbacks: List[Callable[[HumanCheckpoint], Awaitable[bool]]] = []
+
+        # A missing policy implementation must fail closed, never imply approval.
+        from factory.validation.gates import get_gate_registry
+        gate_registry = get_gate_registry()
+        self._gate_handlers = {
+            gate.gate_id: (lambda state, gate_id=gate.gate_id: gate_registry.run_gate(gate_id, state))
+            for gate in gate_registry.get_all()
+        }
         
         # Build the graph
         self._graph = self._build_graph()
-        self._app = self._graph.compile(
-            checkpointer=SqliteSaver.from_conn_string("sqlite:///.factory/checkpoints.sqlite")
-        )
+        # CheckpointStore is the durable store; avoid an unmanaged, hard-coded
+        # LangGraph SQLite saver whose connection context was never entered.
+        self._app = self._graph.compile()
     
     def _build_graph(self) -> StateGraph:
         """Build the LangGraph state machine."""
@@ -112,60 +119,40 @@ class FactoryEngine:
         # Set entry point
         workflow.set_entry_point("triage")
         
-        # Add edges (sequential by default, conditional for gates)
-        workflow.add_edge("triage", "gate_pre_execution")
-        workflow.add_conditional_edges(
-            "gate_pre_execution",
-            self._gate_router("pre_execution"),
-            {"pass": "planning", "fail": END}
-        )
-        
-        workflow.add_edge("planning", "gate_pre_execution")
-        workflow.add_conditional_edges(
-            "gate_pre_execution",
-            self._gate_router("pre_execution"),
-            {"pass": "execution", "fail": END, "human": "human_checkpoint"}
-        )
-        
-        workflow.add_edge("execution", "gate_code_quality")
-        workflow.add_conditional_edges(
-            "gate_code_quality",
-            self._gate_router("code_quality"),
-            {"pass": "gate_tests", "fail": "execution", "human": "human_checkpoint"}
-        )
-        
-        workflow.add_edge("gate_tests", "gate_security")
-        workflow.add_conditional_edges(
-            "gate_security",
-            self._gate_router("security"),
-            {"pass": "gate_review", "fail": "execution", "human": "human_checkpoint"}
-        )
-        
-        workflow.add_edge("gate_review", "gate_human_approval")
-        workflow.add_conditional_edges(
-            "gate_human_approval",
-            self._gate_router("human_approval"),
-            {"pass": "release", "fail": "execution", "human": "human_checkpoint"}
-        )
-        
-        workflow.add_edge("release", "gate_performance")
-        workflow.add_conditional_edges(
-            "gate_performance",
-            self._gate_router("performance"),
-            {"pass": "gate_documentation", "fail": "execution", "warn": "document"}
-        )
-        
+        # Model the pipeline once, in order. Each gate has one decision point;
+        # planning precedes pre-execution checks and retries are bounded.
+        workflow.add_conditional_edges("triage", self._stage_router, {"continue": "planning", "fail": END})
+        workflow.add_conditional_edges("planning", self._stage_router, {"continue": "gate_pre_execution", "fail": END})
+        workflow.add_conditional_edges("gate_pre_execution", self._gate_router("pre_execution"), {
+            "pass": "execution", "fail": END,
+        })
+        workflow.add_conditional_edges("execution", self._stage_router, {"continue": "validation", "fail": END})
+        workflow.add_conditional_edges("validation", self._stage_router, {"continue": "gate_code_quality", "fail": END})
+        workflow.add_conditional_edges("gate_code_quality", self._gate_router("code_quality"), {
+            "pass": "gate_tests", "retry": "execution", "fail": END,
+        })
+        workflow.add_conditional_edges("gate_tests", self._gate_router("tests"), {
+            "pass": "gate_security", "retry": "execution", "fail": END,
+        })
+        workflow.add_conditional_edges("gate_security", self._gate_router("security"), {
+            "pass": "gate_review", "retry": "execution", "fail": END,
+        })
+        workflow.add_conditional_edges("gate_review", self._gate_router("review"), {
+            "pass": "gate_human_approval", "retry": "execution", "fail": END,
+        })
+        workflow.add_conditional_edges("gate_human_approval", self._gate_router("human_approval"), {
+            "pass": "release", "human": "human_checkpoint", "fail": END,
+        })
+        workflow.add_conditional_edges("human_checkpoint", self._checkpoint_router, {
+            "approved": "release", "rejected": END,
+        })
+        workflow.add_conditional_edges("release", self._stage_router, {"continue": "gate_performance", "fail": END})
+        workflow.add_conditional_edges("gate_performance", self._gate_router("performance"), {
+            "pass": "gate_documentation", "warn": "gate_documentation", "fail": END,
+        })
         workflow.add_edge("gate_documentation", "document")
-        workflow.add_conditional_edges(
-            "document",
-            lambda s: "monitor" if s.overall_status == "running" else END,
-            {"monitor": "monitor", END: END}
-        )
-        
-        workflow.add_edge("monitor", END)
-        
-        # Human checkpoint loops back
-        workflow.add_edge("human_checkpoint", "gate_pre_execution")
+        workflow.add_conditional_edges("document", self._stage_router, {"continue": "monitor", "fail": END})
+        workflow.add_conditional_edges("monitor", self._stage_router, {"continue": END, "fail": END})
         
         return workflow
     
@@ -179,6 +166,7 @@ class FactoryEngine:
                 stage_id=stage_id,
                 status=StageStatus.RUNNING,
                 started_at=datetime.utcnow(),
+                retry_count=state.stages.get(stage_id, StageExecution(stage_id=stage_id)).retry_count,
             )
             state.stages[stage_id] = stage_exec
             state.current_stage = stage_id
@@ -195,8 +183,12 @@ class FactoryEngine:
             handler = self._stage_handlers.get(stage_id)
             if not handler:
                 logger.warning("no_handler_for_stage", stage=stage_id)
-                stage_exec.status = StageStatus.SKIPPED
+                stage_exec.status = StageStatus.FAILED
+                stage_exec.error = "No handler registered"
+                state.overall_status = "failed"
+                state.error = f"No handler registered for stage: {stage_id}"
                 stage_exec.completed_at = datetime.utcnow()
+                await self.checkpoint_store.save(state)
                 return state
             
             # Execute handler
@@ -232,6 +224,11 @@ class FactoryEngine:
             return state
         
         return stage_node
+
+    @staticmethod
+    def _stage_router(state: FactoryState) -> str:
+        current = state.get_current_stage()
+        return "fail" if not current or current.status == StageStatus.FAILED else "continue"
     
     def _create_gate_node(self, gate_id: str) -> StageHandler:
         """Create a validation gate node."""
@@ -241,12 +238,11 @@ class FactoryEngine:
             handler = self._gate_handlers.get(gate_id)
             if not handler:
                 logger.warning("no_handler_for_gate", gate=gate_id)
-                # Default pass
                 result = GateResult(
                     gate_id=gate_id,
                     name=gate_id,
-                    passed=True,
-                    details={"reason": "no_handler"}
+                    passed=False,
+                    details={"error": "No handler registered; gate failed closed"}
                 )
             else:
                 gate_start_time = time.time()
@@ -282,13 +278,26 @@ class FactoryEngine:
                 if result.gate_id == gate_id:
                     if result.passed:
                         return "pass"
-                    # Check if human approval is required
-                    current = state.get_current_stage()
-                    if current and self._requires_human_approval(state, gate_id):
+                    if gate_id == "human_approval" and self._requires_human_approval(state, gate_id):
                         return "human"
+                    if not result.details.get("blocking", True):
+                        return "warn"
+                    if gate_id in {"code_quality", "tests", "security", "review"}:
+                        execution = state.get_stage("execution")
+                        if execution and execution.retry_count < execution.max_retries:
+                            execution.retry_count += 1
+                            return "retry"
+                    state.overall_status = "failed"
+                    state.error = f"Blocking gate failed: {gate_id}"
                     return "fail"
+            state.overall_status = "failed"
+            state.error = f"Gate produced no result: {gate_id}"
             return "fail"
         return router
+
+    @staticmethod
+    def _checkpoint_router(state: FactoryState) -> str:
+        return "approved" if any(c.status == "approved" for c in state.checkpoints) else "rejected"
     
     def _requires_human_approval(self, state: FactoryState, gate_id: str) -> bool:
         """Check if human approval is required for this gate/stage."""
@@ -331,11 +340,7 @@ class FactoryEngine:
             "stage_id": current.stage_id,
         })
         
-        # Save and wait
-        await self.checkpoint_store.save(state)
-        
-        # Wait for approval (in real implementation, this would be async with callback)
-        # For now, we'll simulate approval
+        # Wait for explicit approval or rejection; never auto-approve a gate.
         await self._wait_for_approval(state, checkpoint)
         
         return state
@@ -346,10 +351,12 @@ class FactoryEngine:
         checkpoint: HumanCheckpoint
     ) -> None:
         """Wait for human approval."""
-        # Subscribe to checkpoint resolution
+        # Subscribe before saving the checkpoint, so an immediate approval
+        # cannot be lost between persistence and subscription.
         queue = await self.memory_bus.subscribe(f"checkpoint:{checkpoint.id}")
         
         try:
+            await self.checkpoint_store.save(state)
             # Wait for approval message (with timeout)
             msg = await asyncio.wait_for(queue.get(), timeout=3600)  # 1 hour timeout
             
@@ -439,11 +446,11 @@ class FactoryEngine:
                     if node_name != "__checkpoint__":
                         logger.debug("node_complete", node=node_name, run_id=str(state.run_id))
             
-            # Get final state
-            final_state = self._app.get_state(config)
-            state = final_state.values
-            
-            state.overall_status = "completed"
+            # Nodes persist their state through CheckpointStore. LangGraph's
+            # get_state API requires a checkpointer, which this graph does not use.
+            state = await self.checkpoint_store.load(str(state.run_id)) or state
+            if state.overall_status == "running":
+                state.overall_status = "completed"
             state.completed_at = datetime.utcnow()
             
         except Exception as e:

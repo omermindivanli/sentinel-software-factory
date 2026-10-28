@@ -130,8 +130,7 @@ class CodeQualityGate(ValidationGate):
             sandbox_results["lint"] = worker_output.get("lint_passed", False)
             sandbox_results["format"] = worker_output.get("format_passed", False)
             
-            # Type check would be separate
-            sandbox_results["type_check"] = True  # Assume pass for now
+            sandbox_results["type_check"] = worker_output.get("type_check_passed", False)
             
             sandbox_passed = all(sandbox_results.values())
             if sandbox_passed:
@@ -168,11 +167,6 @@ class TestsGate(ValidationGate):
                 details={"error": "Execution stage not found"},
             )
         
-        # Check QA agent results
-        qa_gate = next((g for g in state.gate_results if g.gate_id == "tests"), None)
-        if qa_gate:
-            return qa_gate
-        
         # Fallback: check worker outputs
         sandboxes = exec_stage.output_data.get("sandboxes", [])
         total = len(sandboxes)
@@ -200,7 +194,7 @@ class SecurityGate(ValidationGate):
     
     async def evaluate(self, state: FactoryState) -> GateResult:
         # Check security agent results
-        sec_gate = next((g for g in state.gate_results if g.gate_id == "security"), None)
+        sec_gate = next((g for g in reversed(state.gate_results) if g.gate_id == "security"), None)
         if sec_gate:
             return sec_gate
         
@@ -208,9 +202,9 @@ class SecurityGate(ValidationGate):
         return GateResult(
             gate_id=self.gate_id,
             name=self.name,
-            passed=True,  # Permissive fallback
-            score=1.0,
-            details={"note": "Security agent not run"},
+            passed=False,
+            score=0.0,
+            details={"error": "Security review did not produce a result"},
         )
 
 
@@ -222,16 +216,16 @@ class ReviewGate(ValidationGate):
     
     async def evaluate(self, state: FactoryState) -> GateResult:
         # Check review agent results
-        rev_gate = next((g for g in state.gate_results if g.gate_id == "code_review"), None)
+        rev_gate = next((g for g in reversed(state.gate_results) if g.gate_id == "code_review"), None)
         if rev_gate:
             return rev_gate
         
         return GateResult(
             gate_id=self.gate_id,
             name=self.name,
-            passed=True,
-            score=1.0,
-            details={"note": "Review agent not run"},
+            passed=False,
+            score=0.0,
+            details={"error": "Code review did not produce a result"},
         )
 
 
@@ -306,9 +300,9 @@ class PerformanceGate(ValidationGate):
         return GateResult(
             gate_id=self.gate_id,
             name=self.name,
-            passed=True,
-            score=1.0,
-            details={"note": "Performance checks not implemented"},
+            passed=False,
+            score=0.0,
+            details={"blocking": False, "evaluated": False, "note": "Performance checks are not implemented"},
         )
 
 

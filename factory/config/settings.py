@@ -124,6 +124,9 @@ class SandboxConfig(BaseSettings):
     network_enabled: bool = True
     gpu_enabled: bool = False
     artifact_retention_days: int = 30
+    
+    # Container runtime: "docker" or "podman"
+    container_runtime: Literal["docker", "podman"] = "podman"
 
 
 class MemoryConfig(BaseSettings):

@@ -9,38 +9,39 @@ dependencies = [
     "langgraph>=0.2.0",
     "langchain-core>=0.3.0",
     "langchain-anthropic>=0.2.0",
-    
+
     # API & WebSocket
     "fastapi>=0.110.0",
     "uvicorn[standard]>=0.29.0",
     "websockets>=12.0",
-    
+
     # Config & validation
     "pydantic>=2.7.0",
     "pydantic-settings>=2.3.0",
     "pyyaml>=6.0",
-    
+
     # Database & storage
     "chromadb>=0.5.0",
     "redis>=5.0.0",
     "sqlalchemy>=2.0.0",
     "alembic>=1.13.0",
-    
+
     # MCP
     "mcp>=1.0.0",
-    
-    # Docker & sandboxing
+
+    # Container & sandboxing (Docker + Podman)
     "docker>=7.0.0",
+    "podman-compose>=1.0.0",
     "gitpython>=3.1.0",
-    
+
     # Observability
     "prometheus-client>=0.19.0",
     "structlog>=24.0.0",
-    
+
     # CLI
     "typer>=0.12.0",
     "rich>=13.7.0",
-    
+
     # Utilities
     "python-dotenv>=1.0.0",
     "tenacity>=8.3.0",
@@ -60,6 +61,7 @@ dev = [
 ]
 neo4j = ["neo4j>=5.18.0"]
 kuzu = ["kuzu>=0.5.0"]
+podman = ["podman-compose>=1.0.0"]
 
 [build-system]
 requires = ["hatchling"]
@@ -104,3 +106,6 @@ exclude_lines = [
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["factory"]
