@@ -1,2 +1,3 @@
 .DS_Store
 *.pyc\n__pycache__/
+.env
