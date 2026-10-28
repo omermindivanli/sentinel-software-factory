@@ -147,6 +147,20 @@ The factory will execute the full pipeline: **Triage → Planning → Execution 
 
 ---
 
+## 🖥️ Dashboard Preview
+
+<div align="center">
+
+| Overview | Run Details | Stage Metrics |
+|:--------:|:-----------:|:-------------:|
+| <img src="assets/dashboard-preview-1.jpeg" alt="Dashboard Overview" width="300"> | <img src="assets/dashboard-preview-2.jpeg" alt="Run Detail View" width="300"> | <img src="assets/dashboard-preview-3.jpeg" alt="Stage Metrics" width="300"> |
+
+*Live agent thought stream · Stage progress · Gate results · Sandbox status · Real-time metrics*
+
+</div>
+
+---
+
 ## 📖 Documentation
 
 - [Architecture](docs/architecture.md) — Detailed system architecture
