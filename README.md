@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/sentinel-gate.svg" alt="Sentinel Software Factory" width="680">
+<img src="assets/sentinel-logo.jpeg" alt="Sentinel Software Factory" width="680">
 
 # 🛡️ Sentinel Software Factory
 
