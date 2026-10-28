@@ -108,45 +108,22 @@ class CodeQualityGate(ValidationGate):
                 details={"error": "Execution stage not found"},
             )
         
-        sandboxes = exec_stage.output_data.get("sandboxes", [])
-        
-        total_checks = 0
-        passed_checks = 0
-        details = {"sandboxes": []}
-        
-        for sandbox_info in sandboxes:
-            sandbox_id = sandbox_info["sandbox_id"]
-            sandbox_results = {
-                "sandbox_id": sandbox_id,
-                "lint": False,
-                "type_check": False,
-                "format": False,
-            }
-            
-            # In real implementation, would run linters
-            # For now, check if worker reported lint results
-            worker_output = state.shared_context.get(f"worker_output:{sandbox_info['task_id']}", {})
-            
-            sandbox_results["lint"] = worker_output.get("lint_passed", False)
-            sandbox_results["format"] = worker_output.get("format_passed", False)
-            
-            sandbox_results["type_check"] = worker_output.get("type_check_passed", False)
-            
-            sandbox_passed = all(sandbox_results.values())
-            if sandbox_passed:
-                passed_checks += 1
-            total_checks += 1
-            
-            details["sandboxes"].append(sandbox_results)
-        
-        overall_passed = passed_checks == total_checks and total_checks > 0
-        
+        review = next((g for g in reversed(state.gate_results) if g.gate_id == "code_review"), None)
+        if not review:
+            return GateResult(
+                gate_id=self.gate_id,
+                name=self.name,
+                passed=False,
+                score=0.0,
+                details={"error": "Lint and type-check evidence is missing"},
+            )
+
         return GateResult(
             gate_id=self.gate_id,
             name=self.name,
-            passed=overall_passed,
-            score=passed_checks / total_checks if total_checks > 0 else 1.0,
-            details=details,
+            passed=review.passed,
+            score=review.score,
+            details={"code_review": review.details},
         )
 
 
@@ -167,6 +144,10 @@ class TestsGate(ValidationGate):
                 details={"error": "Execution stage not found"},
             )
         
+        qa_gate = next((g for g in reversed(state.gate_results) if g.gate_id == "tests"), None)
+        if qa_gate:
+            return qa_gate
+
         # Fallback: check worker outputs
         sandboxes = exec_stage.output_data.get("sandboxes", [])
         total = len(sandboxes)

@@ -193,6 +193,7 @@ class CodeReviewAgent(BaseAgent):
         all_findings = []
         total_issues = 0
         critical_issues = 0
+        checks_run = 0
         
         for sandbox_info in sandboxes:
             sandbox_id = sandbox_info["sandbox_id"]
@@ -219,6 +220,7 @@ Task: {sandbox_info.get('task_id', 'unknown')}
                     pass
                 elif obs["tool"] in ["run_linter", "run_type_check"]:
                     result = json.loads(obs["result"])
+                    checks_run += 1
                     if result.get("returncode", 1) != 0:
                         all_findings.append({
                             "sandbox_id": sandbox_id,
@@ -232,17 +234,19 @@ Task: {sandbox_info.get('task_id', 'unknown')}
         review_result = {
             "total_findings": total_issues,
             "critical_count": critical_issues,
+            "checks_run": checks_run,
+            "checks_required": len(sandboxes) * 2,
             "findings": all_findings,
             "reviewed_at": datetime.utcnow().isoformat(),
-            "status": "pass" if critical_issues == 0 else "fail",
+            "status": "pass" if checks_run >= len(sandboxes) * 2 and total_issues == 0 else "fail",
         }
         
         # Create gate result
         gate_result = GateResult(
             gate_id="code_review",
             name="Code Review",
-            passed=critical_issues == 0,
-            score=1.0 - min(critical_issues * 0.2, 1.0),
+            passed=bool(sandboxes) and checks_run >= len(sandboxes) * 2 and total_issues == 0,
+            score=(1.0 if checks_run >= len(sandboxes) * 2 and total_issues == 0 else 0.0),
             details=review_result,
         )
         state.add_gate_result(gate_result)
@@ -339,7 +343,7 @@ class QAAgent(BaseAgent):
         gate_result = GateResult(
             gate_id="tests",
             name="Test Suite",
-            passed=total_failed == 0,
+            passed=bool(sandboxes) and len(all_results) == len(sandboxes) and total_failed == 0,
             score=qa_result["pass_rate"],
             details=qa_result,
         )
@@ -400,6 +404,7 @@ class SecurityAgent(BaseAgent):
         all_vulnerabilities = []
         critical_vulns = 0
         high_vulns = 0
+        scans_run = 0
         
         for sandbox_info in sandboxes:
             sandbox_id = sandbox_info["sandbox_id"]
@@ -416,6 +421,7 @@ class SecurityAgent(BaseAgent):
             
             for obs in self._execution.observations if self._execution else []:
                 if obs["tool"] == "check_security":
+                    scans_run += 1
                     result = json.loads(obs["result"])
                     for check in result.get("checks", []):
                         # Parse findings (simplified)
@@ -433,6 +439,7 @@ class SecurityAgent(BaseAgent):
         
         security_result = {
             "sandboxes_scanned": len(sandboxes),
+            "scans_run": scans_run,
             "critical_vulnerabilities": critical_vulns,
             "high_vulnerabilities": high_vulns,
             "total_findings": len(all_vulnerabilities),
@@ -443,8 +450,8 @@ class SecurityAgent(BaseAgent):
         gate_result = GateResult(
             gate_id="security",
             name="Security Review",
-            passed=critical_vulns == 0 and high_vulns == 0,
-            score=1.0 - min((critical_vulns * 0.5 + high_vulns * 0.2), 1.0),
+            passed=bool(sandboxes) and scans_run == len(sandboxes) and critical_vulns == 0 and high_vulns == 0,
+            score=(1.0 - min((critical_vulns * 0.5 + high_vulns * 0.2), 1.0)) if scans_run == len(sandboxes) and sandboxes else 0.0,
             details=security_result,
         )
         state.add_gate_result(gate_result)
