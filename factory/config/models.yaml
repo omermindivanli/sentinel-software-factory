@@ -1,0 +1,71 @@
+router:
+  default_provider: anthropic
+  fallback_provider: ollama
+  models:
+    - id: claude-opus-4
+      provider: anthropic
+      max_tokens: 8192
+      temperature: 0.0
+      cost_per_1k_input: 0.015
+      cost_per_1k_output: 0.075
+      capabilities: [planning, architecture, complex_reasoning, think_tool]
+      api_key_env: ANTHROPIC_API_KEY
+      
+    - id: claude-sonnet-4
+      provider: anthropic
+      max_tokens: 8192
+      temperature: 0.0
+      cost_per_1k_input: 0.003
+      cost_per_1k_output: 0.015
+      capabilities: [code_generation, review, think_tool, debugging]
+      api_key_env: ANTHROPIC_API_KEY
+      
+    - id: claude-3-5-sonnet
+      provider: anthropic
+      max_tokens: 8192
+      temperature: 0.0
+      cost_per_1k_input: 0.003
+      cost_per_1k_output: 0.015
+      capabilities: [code_generation, review, test_generation, think_tool]
+      api_key_env: ANTHROPIC_API_KEY
+      
+    - id: claude-3-5-haiku
+      provider: anthropic
+      max_tokens: 8192
+      temperature: 0.0
+      cost_per_1k_input: 0.00025
+      cost_per_1k_output: 0.00125
+      capabilities: [classification, triage, docs, simple_tasks]
+      api_key_env: ANTHROPIC_API_KEY
+      
+    - id: llama-3.1-8b
+      provider: ollama
+      local: true
+      base_url: http://ollama:11434
+      max_tokens: 4096
+      temperature: 0.1
+      cost_per_1k_input: 0.0
+      cost_per_1k_output: 0.0
+      capabilities: [simple_tasks, embeddings, classification]
+      
+    - id: llama-3.1-70b
+      provider: ollama
+      local: true
+      base_url: http://ollama:11434
+      max_tokens: 8192
+      temperature: 0.0
+      cost_per_1k_input: 0.0
+      cost_per_1k_output: 0.0
+      capabilities: [code_generation, review, planning]
+      
+  routing_rules:
+    planning: claude-opus-4
+    architecture: claude-opus-4
+    code_generation: claude-sonnet-4
+    code_review: claude-sonnet-4
+    think_tool: claude-sonnet-4
+    test_generation: claude-3-5-sonnet
+    classification: claude-3-5-haiku
+    triage: claude-3-5-haiku
+    documentation: claude-3-5-haiku
+    simple_tasks: llama-3.1-8b

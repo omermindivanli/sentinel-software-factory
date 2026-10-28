@@ -1,0 +1,269 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+code, pre {
+  font-family: var(--font-mono);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400;
+}
+
+/* Focus styles */
+:focus-visible {
+  @apply outline-none ring-2 ring-factory-500 ring-offset-2;
+}
+
+/* Animation utilities */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
+
+/* Status badge */
+.status-badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.status-running { @apply bg-blue-100 text-blue-800; }
+.status-completed { @apply bg-green-100 text-green-800; }
+.status-failed { @apply bg-red-100 text-red-800; }
+.status-waiting { @apply bg-yellow-100 text-yellow-800; }
+.status-paused { @apply bg-purple-100 text-purple-800; }
+
+/* Card */
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200;
+}
+
+.card-hover {
+  @apply transition-shadow hover:shadow-md;
+}
+
+/* Button */
+.btn {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-primary {
+  @apply btn bg-factory-600 text-white hover:bg-factory-700 focus:ring-factory-500;
+}
+
+.btn-secondary {
+  @apply btn bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-gray-500;
+}
+
+.btn-danger {
+  @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500;
+}
+
+.btn-sm {
+  @apply px-3 py-1.5 text-sm;
+}
+
+.btn-lg {
+  @apply px-6 py-3 text-lg;
+}
+
+/* Input */
+.input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-factory-500 focus:border-factory-500;
+}
+
+.input-error {
+  @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+}
+
+/* Table */
+.table-container {
+  @apply overflow-x-auto;
+}
+
+.table {
+  @apply w-full text-sm text-left;
+}
+
+.table th {
+  @apply px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-200;
+}
+
+.table td {
+  @apply px-4 py-3 border-b border-gray-100;
+}
+
+.table tbody tr {
+  @apply hover:bg-gray-50 transition-colors;
+}
+
+/* Badge */
+.badge {
+  @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium;
+}
+
+.badge-gray { @apply bg-gray-100 text-gray-700; }
+.badge-blue { @apply bg-blue-100 text-blue-700; }
+.badge-green { @apply bg-green-100 text-green-700; }
+.badge-yellow { @apply bg-yellow-100 text-yellow-700; }
+.badge-red { @apply bg-red-100 text-red-700; }
+.badge-purple { @apply bg-purple-100 text-purple-700; }
+
+/* Layout */
+.page-container {
+  @apply min-h-screen bg-gray-50;
+}
+
+.sidebar {
+  @apply fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0;
+}
+
+.sidebar-open {
+  @apply translate-x-0;
+}
+
+.sidebar-closed {
+  @apply -translate-x-full;
+}
+
+.main-content {
+  @apply lg:pl-64 min-h-screen;
+}
+
+.top-bar {
+  @apply sticky top-0 z-40 bg-white border-b border-gray-200;
+}
+
+/* Agent thought stream */
+.thought-stream {
+  @apply space-y-2 max-h-96 overflow-y-auto p-4;
+}
+
+.thought-item {
+  @apply flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200;
+}
+
+.thought-agent {
+  @apply font-mono text-xs text-factory-600 font-medium whitespace-nowrap;
+}
+
+.thought-content {
+  @apply flex-1 text-sm text-gray-700;
+}
+
+.thought-action {
+  @apply font-mono text-xs text-factory-500 bg-factory-50 px-2 py-0.5 rounded;
+}
+
+/* Stage card */
+.stage-card {
+  @apply card p-6;
+}
+
+.stage-header {
+  @apply flex items-center justify-between mb-4;
+}
+
+.stage-title {
+  @apply text-lg font-semibold text-gray-900;
+}
+
+.stage-metrics {
+  @apply grid grid-cols-2 gap-4 mt-4;
+}
+
+.metric-item {
+  @apply text-center;
+}
+
+.metric-value {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.metric-label {
+  @apply text-xs text-gray-500 mt-1;
+}
+
+/* Run card */
+.run-card {
+  @apply card p-4 hover:shadow-md transition-shadow cursor-pointer;
+}
+
+.run-header {
+  @apply flex items-center justify-between mb-2;
+}
+
+.run-title {
+  @apply font-medium text-gray-900 truncate;
+}
+
+.run-meta {
+  @apply flex items-center gap-2 text-sm text-gray-500;
+}
+
+/* Progress bar */
+.progress-bar {
+  @apply h-2 bg-gray-200 rounded-full overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full transition-all duration-300 ease-out;
+}
+
+/* Empty state */
+.empty-state {
+  @apply text-center py-12 text-gray-500;
+}
+
+.empty-state-icon {
+  @apply mx-auto mb-4 text-gray-300;
+}
+
+/* Loading */
+.loading-skeleton {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+/* Tooltip */
+.tooltip {
+  @apply absolute z-50 px-2 py-1 text-xs text-white bg-gray-900 rounded shadow-lg pointer-events-none;
+}

@@ -1,0 +1,140 @@
+risk_tiers:
+  - name: low
+    repos:
+      - "*-internal"
+      - "docs-*"
+      - "tools-*"
+      - "scripts-*"
+      - "examples-*"
+    gates:
+      - code_quality
+      - tests
+    human_approval: false
+    max_autonomy: full
+    require_dual_llm: false
+    
+  - name: medium
+    repos:
+      - "core-*"
+      - "api-*"
+      - "services-*"
+      - "libs-*"
+      - "apps-*"
+    gates:
+      - code_quality
+      - tests
+      - security
+      - review
+    human_approval: true
+    max_autonomy: supervised
+    require_dual_llm: false
+    
+  - name: high
+    repos:
+      - "payments-*"
+      - "auth-*"
+      - "security-*"
+      - "infra-*"
+      - "prod-*"
+      - "*-prod"
+      - "database-*"
+    gates:
+      - code_quality
+      - tests
+      - security
+      - review
+      - performance
+      - human_approval
+    human_approval: true
+    max_autonomy: guided
+    require_dual_llm: true
+
+command_allowlist:
+  - git
+  - npm
+  - pnpm
+  - yarn
+  - pip
+  - pipx
+  - poetry
+  - uv
+  - docker
+  - docker-compose
+  - kubectl
+  - helm
+  - terraform
+  - tofu
+  - pytest
+  - vitest
+  - jest
+  - mypy
+  - pyright
+  - ruff
+  - black
+  - isort
+  - eslint
+  - prettier
+  - tsc
+  - go
+  - cargo
+  - make
+  - cmake
+  - ninja
+  - bash
+  - sh
+  - python
+  - python3
+  - node
+  - npx
+
+command_denylist:
+  - "rm -rf /"
+  - "rm -rf /*"
+  - "sudo"
+  - "su "
+  - "chmod 777"
+  - "chmod -R 777"
+  - "curl | bash"
+  - "wget | bash"
+  - "npm publish"
+  - "pip publish"
+  - "git push --force"
+  - "git push -f"
+  - "dd if="
+  - "mkfs"
+  - "fdisk"
+  - "mount"
+  - "umount"
+  - "systemctl"
+  - "service "
+  - "iptables"
+  - "ufw"
+  - "firewall-cmd"
+  - "passwd"
+  - "useradd"
+  - "userdel"
+  - "chown -R root"
+  - "chgrp -R root"
+
+secrets_policy:
+  never_in_context: true
+  use_env_vars: true
+  vault_integration: false
+  vault_addr: ""
+  vault_token_env: VAULT_TOKEN
+  allowed_secret_patterns:
+    - "^[A-Z_]+_TOKEN$"
+    - "^[A-Z_]+_KEY$"
+    - "^[A-Z_]+_SECRET$"
+    - "^[A-Z_]+_PASSWORD$"
+  blocked_in_context:
+    - "password"
+    - "secret"
+    - "token"
+    - "key"
+    - "credential"
+    - "api_key"
+    - "apikey"
+    - "auth"
+    - "bearer"
+    - "private"

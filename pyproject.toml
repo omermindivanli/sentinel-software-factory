@@ -1,0 +1,106 @@
+[project]
+name = "software-factory"
+version = "0.1.0"
+description = "Local-first software factory with multi-agent SDLC automation"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    # Core orchestration
+    "langgraph>=0.2.0",
+    "langchain-core>=0.3.0",
+    "langchain-anthropic>=0.2.0",
+    
+    # API & WebSocket
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.29.0",
+    "websockets>=12.0",
+    
+    # Config & validation
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.3.0",
+    "pyyaml>=6.0",
+    
+    # Database & storage
+    "chromadb>=0.5.0",
+    "redis>=5.0.0",
+    "sqlalchemy>=2.0.0",
+    "alembic>=1.13.0",
+    
+    # MCP
+    "mcp>=1.0.0",
+    
+    # Docker & sandboxing
+    "docker>=7.0.0",
+    "gitpython>=3.1.0",
+    
+    # Observability
+    "prometheus-client>=0.19.0",
+    "structlog>=24.0.0",
+    
+    # CLI
+    "typer>=0.12.0",
+    "rich>=13.7.0",
+    
+    # Utilities
+    "python-dotenv>=1.0.0",
+    "tenacity>=8.3.0",
+    "httpx>=0.27.0",
+    "aiofiles>=24.0.0",
+    "orjson>=3.10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.2.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.5.0",
+    "mypy>=1.10.0",
+    "pre-commit>=3.7.0",
+]
+neo4j = ["neo4j>=5.18.0"]
+kuzu = ["kuzu>=0.5.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "UP", "W", "C90", "ANN", "T20", "TID", "SIM", "RET", "ARG", "PTH", "ERA", "PD", "PL", "TRY"]
+ignore = ["ANN101", "ANN102", "ANN103", "T201", "T203", "PTH123", "S101"]
+fixable = ["F", "I", "UP", "W", "C90", "T20", "SIM", "RET", "ARG", "PTH", "ERA", "PD", "PL", "TRY"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+strict_optional = true
+no_implicit_reexport = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["factory"]
+omit = ["tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

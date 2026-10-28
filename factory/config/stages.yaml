@@ -1,0 +1,106 @@
+stages:
+  - id: triage
+    name: "Triage"
+    agent: triage
+    description: "Classify and route inbound work"
+    parallelism: 1
+    schedule: "continuous"
+    metrics:
+      - throughput
+      - backlog_depth
+      - deduplication_rate
+      - classification_accuracy
+    gates:
+      - pre_execution
+    human_gate: false
+    integrations: [github, linear, slack]
+    
+  - id: planning
+    name: "Planning"
+    agent: architect
+    description: "Technical specification and task breakdown"
+    parallelism: 1
+    metrics:
+      - spec_completeness
+      - task_breakdown_quality
+      - estimation_accuracy
+    gates:
+      - pre_execution
+    human_gate: true
+    integrations: [github, linear]
+    
+  - id: execution
+    name: "Code Generation"
+    agent: worker_pool
+    description: "Implement changes in isolated sandboxes"
+    parallelism: 5
+    metrics:
+      - lines_changed
+      - files_touched
+      - sandbox_success_rate
+      - test_generation_rate
+    gates:
+      - code_quality
+      - tests
+      - security
+    human_gate: false
+    integrations: [github]
+    
+  - id: validation
+    name: "Validation"
+    agents: [reviewer, qa, security]
+    description: "Automated review, QA, and security gates"
+    parallelism: 3
+    metrics:
+      - pass_rate
+      - review_volume
+      - findings_by_severity
+      - review_latency
+    gates:
+      - review
+      - human_approval
+    human_gate: true
+    integrations: [github]
+    
+  - id: release
+    name: "Release"
+    agent: release
+    description: "Deployment gates and shipping"
+    parallelism: 1
+    metrics:
+      - deployments
+      - cycle_time
+      - rollback_rate
+      - deployment_success_rate
+    gates:
+      - performance
+      - documentation
+    human_gate: false
+    integrations: [github, kubernetes]
+    
+  - id: document
+    name: "Documentation"
+    agent: documenter
+    description: "AutoWiki and knowledge maintenance"
+    schedule: "on_merge"
+    metrics:
+      - docs_updated
+      - repository_coverage
+      - wiki_freshness
+    gates: []
+    human_gate: false
+    integrations: [github]
+    
+  - id: monitor
+    name: "Monitor"
+    agent: incident
+    description: "Incident response and agent effectiveness"
+    schedule: "continuous"
+    metrics:
+      - incidents_processed
+      - mttr
+      - token_efficiency
+      - agent_effectiveness
+    gates: []
+    human_gate: false
+    integrations: [github, slack, pagerduty, datadog]
