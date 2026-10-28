@@ -2,6 +2,7 @@
 
 import asyncio
 import uuid
+import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Callable, Awaitable
 from uuid import UUID
@@ -33,6 +34,19 @@ from factory.orchestration.memory_bus import (
     ContextPropagator,
     ArtifactStore,
 )
+
+# Metrics
+try:
+    from factory.dashboard.api.metrics import (
+        record_run_start,
+        record_run_complete,
+        record_stage_complete,
+        record_gate_evaluation,
+        record_agent_execution,
+    )
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
 
 logger = structlog.get_logger(__name__)
 
@@ -186,6 +200,7 @@ class FactoryEngine:
                 return state
             
             # Execute handler
+            stage_start_time = time.time()
             try:
                 state = await handler(state)
                 stage_exec.status = StageStatus.COMPLETED
@@ -198,6 +213,12 @@ class FactoryEngine:
                 stage_exec.completed_at = datetime.utcnow()
                 state.overall_status = "failed"
                 state.error = str(e)
+            
+            # Record stage completion metric
+            if METRICS_ENABLED:
+                stage_duration = time.time() - stage_start_time
+                status = stage_exec.status.value
+                record_stage_complete(stage_id, status, stage_duration)
             
             # Save context for next stages
             if stage_exec.output_data:
@@ -228,7 +249,13 @@ class FactoryEngine:
                     details={"reason": "no_handler"}
                 )
             else:
+                gate_start_time = time.time()
                 result = await handler(state)
+                
+                # Record gate evaluation metric
+                if METRICS_ENABLED:
+                    gate_duration = time.time() - gate_start_time
+                    record_gate_evaluation(gate_id, result.passed, gate_duration)
             
             state.add_gate_result(result)
             
@@ -397,6 +424,11 @@ class FactoryEngine:
         
         logger.info("factory_run_start", run_id=str(state.run_id), work_item=work_item.title)
         
+        # Record run start metric
+        if METRICS_ENABLED:
+            record_run_start(work_item.repository)
+            run_start_time = time.time()
+        
         # Execute graph
         config = {"configurable": {"thread_id": str(state.run_id)}}
         
@@ -419,6 +451,11 @@ class FactoryEngine:
             state.overall_status = "failed"
             state.error = str(e)
             state.completed_at = datetime.utcnow()
+        
+        # Record run completion metric
+        if METRICS_ENABLED:
+            duration = time.time() - run_start_time
+            record_run_complete(work_item.repository, state.overall_status, duration)
         
         # Save final checkpoint
         await self.checkpoint_store.save(state)

@@ -8,10 +8,9 @@ from factory.agents.validation import (
     CodeReviewAgent, QAAgent, SecurityAgent,
     DynamicCodeReviewAgent, DynamicQAAgent, DynamicSecurityAgent
 )
-from factory.agents.release_docs_monitor import (
-    ReleaseAgent, DocumenterAgent, MonitorAgent,
-    DynamicReleaseAgent, DynamicDocumenterAgent, DynamicMonitorAgent
-)
+from factory.agents.release import ReleaseAgent, DynamicReleaseAgent
+from factory.agents.document import DocumenterAgent, DynamicDocumenterAgent
+from factory.agents.monitor import MonitorAgent, DynamicMonitorAgent
 
 __all__ = [
     # Base

@@ -1,5 +1,3 @@
-"""Base agent class with Think tool and standard patterns."""
-
 import asyncio
 import json
 import time
@@ -23,6 +21,13 @@ from factory.orchestration.state import (
 from factory.orchestration.router import get_router, ModelRouter
 from factory.orchestration.memory_bus import get_memory_bus, get_context_propagator
 from factory.orchestration.engine import get_engine
+
+# Metrics
+try:
+    from factory.dashboard.api.metrics import record_agent_execution
+    METRICS_ENABLED = True
+except ImportError:
+    METRICS_ENABLED = False
 
 logger = structlog.get_logger(__name__)
 
@@ -161,6 +166,7 @@ class BaseAgent(ABC):
         4. Check results
         5. Repeat until condition met
         """
+        agent_start_time = time.time()
         # Initialize execution tracking
         self._execution = AgentExecution(
             id=uuid4(),
@@ -193,6 +199,7 @@ class BaseAgent(ABC):
             
             # Get LLM with current model
             model = self._get_llm()
+            model_config = self._get_llm()
             
             try:
                 # Invoke LLM
@@ -260,7 +267,6 @@ class BaseAgent(ABC):
                         ))
                 
                 # Update cost estimate
-                model_config = self._get_llm()
                 if model_config and hasattr(response, 'usage_metadata'):
                     usage = response.usage_metadata
                     input_tokens = usage.get('input_tokens', 0)
@@ -275,6 +281,20 @@ class BaseAgent(ABC):
                 self._execution.status = AgentStatus.ERROR
                 self._execution.error = str(e)
                 break
+        
+        # Record agent execution metrics
+        if METRICS_ENABLED:
+            agent_duration = time.time() - agent_start_time
+            model_id = model_config.id if model_config else "unknown"
+            status = self._execution.status.value
+            record_agent_execution(
+                agent_type=self.agent_type,
+                status=status,
+                tokens=self._execution.tokens_used,
+                cost=self._execution.cost,
+                latency=agent_duration,
+                model=model_id,
+            )
         
         if iteration >= self.max_iterations:
             logger.warning("max_iterations_reached", agent=self.name, iterations=iteration)
