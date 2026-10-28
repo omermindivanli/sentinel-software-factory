@@ -1,12 +1,44 @@
-# Software Factory
+<div align="center">
 
-A local-first, production-grade software factory that automates the full SDLC using coordinated multi-agent AI loops. Inspired by Factory.com's architecture, built on proven patterns from *Agentic Design Patterns* and Anthropic's latest research.
+<img src="assets/sentinel-gate.svg" alt="Sentinel Software Factory" width="680">
 
-## 🏗️ Architecture Overview
+# 🛡️ Sentinel Software Factory
+
+**From intent to shipped software.**
+
+Local-first AI agents. Governed execution. Human-controlled release.
+
+<img src="assets/readme-hero.png" alt="Sentinel Software Factory workflow: intake, plan, build, verify, ship" width="100%">
+
+**Plan.** · **Build.** · **Verify.** · **Ship.**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
+[![Docker](https://img.shields.io/badge/Sandboxes-Docker%20%2B%20Worktrees-2496ED.svg)](https://www.docker.com/)
+[![MCP](https://img.shields.io/badge/Tools-MCP%20Enabled-20D9F3.svg)](https://modelcontextprotocol.io/)
+
+</div>
+
+---
+
+## 🏗️ Architecture & Agent Pipeline
+
+Sentinel Software Factory coordinates autonomous agent loops across six deterministic SDLC stages:
+
+| Stage | Agent | Responsibility | Key Patterns |
+|-------|-------|----------------|--------------|
+| **1. Intake (Triage)** | `TriageAgent` | Work classification, deduplication, intent routing | Routing, Reflection |
+| **2. Planning (Architect)** | `ArchitectAgent` | Technical specs, system context, task decomposition | Planning, Prompt Chaining |
+| **3. Execution (Worker Pool)** | `WorkerPoolAgent` | Parallelized implementation in isolated sandboxes | Multi-Agent, Parallelization, Tool Use |
+| **4. Validation (Gates)** | `CodeReviewAgent` + `QAAgent` + `SecurityAgent` | Dual-LLM code review, unit tests, security scans | Guardrails, Human-in-the-Loop, Reflection |
+| **5. Release (Ship)** | `ReleaseAgent` | Deployment orchestration, smoke testing, rollback | Prioritization, Monitoring |
+| **6. Documentation** | `DocumenterAgent` | AutoWiki, ADRs, changelogs, API docs | Learning, Exploration |
+| **7. Monitor** | `MonitorAgent` | Incident correlation, auto-remediation, effectiveness tracking | Learning, Evaluation |
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────┐
-│                         SOFTWARE FACTORY (Local-First)                           │
+│                    SENTINEL SOFTWARE FACTORY (Local-First)                       │
 ├─────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                  │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌────────┐  │
@@ -17,7 +49,7 @@ A local-first, production-grade software factory that automates the full SDLC us
 │        └───────────────┼────────────────┼────────────────┼────────────────┘        │
 │                        ▼                ▼                ▼                         │
 │  ┌─────────────────────────────────────────────────────────────────────────────┐   │
-│  │                    ORCHESTRATION ENGINE (LangGraph)                          │   │
+│  │              ORCHESTRATION ENGINE (LangGraph)                                │   │
 │  │  State Machine • Checkpointing • Human Gates • Model Router • Memory Bus    │   │
 │  └─────────────────────────────────────────────────────────────────────────────┘   │
 │                        │                │                │                         │
@@ -32,45 +64,50 @@ A local-first, production-grade software factory that automates the full SDLC us
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## ✨ Features
+---
 
-### Six SDLC Stages (Factory.com-aligned)
+## ✨ Core Capabilities
 
-| Stage | Agent | Description | Key Patterns |
-|-------|-------|-------------|--------------|
-| **Triage** | Classifier | Classify, deduplicate, route work | Routing, Reflection |
-| **Planning** | Architect | Technical spec, task breakdown | Planning, Prompt Chaining |
-| **Execution** | Worker Pool | Implement in isolated sandboxes | Multi-Agent, Parallelization, Tool Use |
-| **Validation** | Reviewer + QA + Security | Code review, tests, security gates | Guardrails, Human-in-Loop, Reflection |
-| **Release** | Release Manager | Deploy, smoke test, track | Prioritization, Monitoring |
-| **Document** | AutoWiki | Update docs, changelogs, ADRs | Learning, Exploration |
-| **Monitor** | Incident Responder | Correlate incidents, auto-remediate | Learning, Evaluation |
+### 🔒 Local-First by Design
+Runs entirely on your machine or self-hosted — no cloud dependency. You own the models, the data, and the execution environment.
 
-### Core Capabilities
+### 🤖 Multi-Agent Orchestration (LangGraph)
+Production-grade state machine with checkpointing, human-in-the-loop gates, and model routing. Built on LangGraph for reliable, resumable execution.
 
-- **🔒 Local-First**: Runs entirely on your machine or self-hosted - no cloud dependency
-- **🤖 Multi-Agent Orchestration**: LangGraph-based state machine with checkpointing
-- **🏗️ Isolated Sandboxes**: Git worktrees + Docker containers for parallel execution
-- **🧠 Tiered Memory**: Working (Redis) → Episodic (ChromaDB) → Semantic (Neo4j) → Procedural (Templates)
-- **🔌 MCP Integration**: Progressive tool discovery, programmatic tool calling
-- **📊 Real-time Dashboard**: React + WebSocket live agent thoughts, stage metrics, run history
-- **🛡️ Governance**: Risk tiers, command allow/deny lists, human approval gates, dual-LLM review
-- **📈 Observability**: Prometheus metrics, Grafana dashboards, distributed tracing
-- **💰 Cost Tracking**: Per-model, per-agent, per-run token and cost accounting
+### 🏗️ Isolated Sandboxes
+Git worktrees + Docker containers per task. Full isolation for parallel execution, safe tool use, and reproducible builds.
+
+### 🧠 Tiered Memory System
+- **Working** (Redis): Active task context, sub-hour TTL
+- **Episodic** (ChromaDB): Conversation history, decisions, 30-day retention
+- **Semantic** (Neo4j): Architecture decisions, code patterns, permanent knowledge graph
+- **Procedural** (Templates): Versioned skills, workflows, best practices
+
+### 🔌 MCP Integration
+Model Context Protocol for standardized tool connectivity. Progressive tool discovery keeps context lean.
+
+### 📊 Real-Time Observability
+React dashboard with WebSocket live updates. Prometheus + Grafana for historical metrics. Per-agent cost tracking.
+
+### 🛡️ Governance & Safety
+Risk-tiered repositories, command allow/deny lists, human approval gates, dual-LLM review for high-risk changes. Secrets never enter agent context.
+
+### 💰 Transparent Cost Tracking
+Per-model, per-agent, per-run token and USD cost accounting. Model routing optimizes for cost/quality.
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-
 - Docker & Docker Compose
-- Anthropic API key (for Claude models)
+- Anthropic API key (for Claude models) — [Get one here](https://console.anthropic.com/)
 - Optional: Ollama for local models
 
-### 1. Clone and Configure
-
+### 1. Clone & Configure
 ```bash
-git clone <repo>
-cd software-factory
+git clone https://github.com/omermindivanli/sentinel-software-factory.git
+cd sentinel-software-factory
 
 # Copy environment template
 cp .env.example .env
@@ -80,51 +117,50 @@ cp .env.example .env
 ```
 
 ### 2. Start the Factory
-
 ```bash
-# Development mode (with hot reload)
-docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+# Development mode (hot reload)
+./scripts/setup.sh
 
-# Production mode
-docker-compose up -d
+# Or manually with Docker Compose
+docker-compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ```
 
 ### 3. Access the Dashboard
-
-- **Dashboard**: http://localhost:5173
-- **API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
-- **Metrics**: http://localhost:9090 (Prometheus)
-- **Grafana**: http://localhost:3000 (admin/factory123)
+| Service | URL | Credentials |
+|---------|-----|-------------|
+| **Dashboard** | http://localhost:5173 | — |
+| **API** | http://localhost:8000 | — |
+| **API Docs** | http://localhost:8000/docs | — |
+| **Prometheus** | http://localhost:9090 | — |
+| **Grafana** | http://localhost:3000 | admin / factory123 |
 
 ### 4. Create Your First Run
-
 ```bash
-# Via API
-curl -X POST http://localhost:8000/api/v1/runs \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Add user authentication",
-    "description": "Implement JWT-based auth with refresh tokens",
-    "repository": "myorg/myapp",
-    "priority": "high"
-  }'
+# Via CLI
+factory run "Add user authentication" "Implement JWT with refresh tokens" --repo myorg/myapp --priority high
 
-# Or use the Dashboard UI at http://localhost:5173
+# Or via Dashboard UI at http://localhost:5173
+# Click "New Run" → Fill form → Submit
 ```
+
+The factory will execute the full pipeline: **Triage → Planning → Execution → Validation → Release → Document → Monitor**
+
+---
 
 ## 📖 Documentation
 
-- [Architecture](docs/architecture.md) - Detailed system architecture
-- [Getting Started](docs/getting-started.md) - Step-by-step tutorial
-- [Configuration](docs/configuration.md) - All configuration options
-- [Agent Guide](docs/agent-guide.md) - Creating custom agents
-- [Dashboard Guide](docs/dashboard-guide.md) - Dashboard features
+- [Architecture](docs/architecture.md) — Detailed system architecture
+- [Getting Started](docs/getting-started.md) — Step-by-step tutorial
+- [Configuration](docs/configuration.md) — All configuration options
+- [Agent Guide](docs/agent-guide.md) — Creating custom agents
+- [Dashboard Guide](docs/dashboard-guide.md) — Dashboard features
+- [Security Audit](SECURITY_AUDIT.md) — Security assessment report
+
+---
 
 ## ⚙️ Configuration
 
 ### Models (`factory/config/models.yaml`)
-
 ```yaml
 router:
   default_provider: anthropic
@@ -141,7 +177,6 @@ router:
 ```
 
 ### Stages (`factory/config/stages.yaml`)
-
 ```yaml
 stages:
   - id: triage
@@ -156,7 +191,6 @@ stages:
 ```
 
 ### Governance (`factory/config/governance.yaml`)
-
 ```yaml
 risk_tiers:
   - name: high
@@ -167,9 +201,13 @@ risk_tiers:
     require_dual_llm: true
 ```
 
-## 🤖 Creating Custom Agents
+---
 
+## 🤖 Extending the Factory
+
+### Adding a Custom Agent
 ```python
+# factory/agents/my_agent.py
 from factory.agents.base import BaseAgent
 from langchain_core.tools import tool
 
@@ -190,80 +228,92 @@ class MyAgent(BaseAgent):
         )
     
     async def execute(self, state: FactoryState) -> FactoryState:
-        # Your agent logic here
         return await self.run_react_loop(state, "Your task prompt")
-```
 
-Register in `factory/agents/__init__.py`:
-
-```python
+# Register in factory/agents/__init__.py
 AGENT_REGISTRY["custom"] = MyAgent
 ```
 
-## 🔌 MCP Server Integration
+### Adding a Quality Gate
+```python
+from factory.validation.gates import ValidationGate, GateResult
 
-Add to `settings.mcp.servers`:
+class CustomGate(ValidationGate):
+    def __init__(self):
+        super().__init__("custom_gate", "Custom Gate", blocking=True)
+    
+    async def evaluate(self, state: FactoryState) -> GateResult:
+        # Your validation logic
+        return GateResult(gate_id="custom_gate", name="Custom Gate", passed=True, score=1.0)
 
-```yaml
-mcp:
-  servers:
-    github:
-      command: "npx"
-      args: ["-y", "@modelcontextprotocol/server-github"]
-      env:
-        GITHUB_TOKEN: "${GITHUB_TOKEN}"
-    linear:
-      command: "npx"
-      args: ["-y", "@modelcontextprotocol/server-linear"]
-      env:
-        LINEAR_API_KEY: "${LINEAR_API_KEY}"
+# Register
+get_gate_registry().register(CustomGate())
 ```
 
-## 📊 Monitoring
+### Adding an MCP Server
+```yaml
+# factory/config/settings.py (mcp.servers)
+mcp:
+  servers:
+    my_server:
+      command: "npx"
+      args: ["-y", "@modelcontextprotocol/server-mytool"]
+      env:
+        MY_API_KEY: "${MY_API_KEY}"
+```
 
-### Key Metrics
+---
 
-- `factory_runs_total` - Total runs by status/repository
-- `factory_stage_throughput_total` - Items processed per stage
-- `factory_stage_pass_rate` - Gate pass rates
-- `factory_agent_tokens_total` - Token usage by agent/model
-- `factory_agent_cost_total` - Cost in USD
-- `factory_sandbox_creations_total` - Sandbox lifecycle
+## 📊 Monitoring & Metrics
+
+### Key Prometheus Metrics
+| Metric | Description |
+|--------|-------------|
+| `factory_runs_total` | Total runs by status/repository |
+| `factory_stage_throughput_total` | Items processed per stage |
+| `factory_stage_pass_rate` | Gate pass rates per stage |
+| `factory_agent_cost_total` | Cost in USD by agent/model |
+| `factory_agent_tokens_total` | Token usage by agent/model |
+| `factory_stage_cycle_time_seconds` | Stage duration histogram |
 
 ### Grafana Dashboards
-
 Pre-built dashboards in `monitoring/grafana/dashboards/`:
-- Factory Overview
-- Stage Health
-- Agent Performance
-- Cost Analysis
-- Sandbox Utilization
+- **Factory Overview** — Run health, stage metrics, cost tracking
+- **Stage Health** — Throughput, pass rates, cycle times
+- **Agent Performance** — Latency, token usage, cost per agent
+- **Cost Analysis** — Model routing efficiency, budget tracking
+
+---
 
 ## 🧪 Testing
 
 ```bash
-# Run unit tests
+# Unit tests
 pytest tests/unit -v
 
-# Run integration tests
+# Integration tests
 pytest tests/integration -v
 
-# Run with coverage
+# With coverage
 pytest --cov=factory tests/
 ```
+
+---
 
 ## 📁 Project Structure
 
 ```
-software-factory/
-├── SPEC.md                    # This specification
+sentinel-software-factory/
+├── SECURITY_AUDIT.md          # Security assessment
+├── SPEC.md                    # Full technical specification
 ├── docker-compose.yml         # Production stack
-├── docker-compose.dev.yml     # Development overrides
+├── docker-compose.dev.yml     # Development with hot reload
 ├── pyproject.toml             # Python dependencies
+├── assets/                    # Brand assets (logo, hero)
 ├── factory/
-│   ├── config/                # Configuration (models, stages, governance)
+│   ├── config/                # Models, stages, governance
 │   ├── orchestration/         # LangGraph engine, state, checkpoints
-│   ├── agents/                # All agent implementations
+│   ├── agents/                # 7 specialized SDLC agents
 │   ├── sandbox/               # Worktree + Docker management
 │   ├── tools/                 # Built-in tools + MCP client
 │   ├── memory/                # Vector, graph, KV stores
@@ -276,6 +326,8 @@ software-factory/
 └── docs/                      # Documentation
 ```
 
+---
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -284,20 +336,38 @@ software-factory/
 4. Run tests: `pytest`
 5. Submit a PR
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+---
+
 ## 📄 License
 
-MIT License - see LICENSE file for details.
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
 
 ## 🙏 Acknowledgments
 
-- **Factory.com** - Stage model, metrics, dashboard concepts
-- **Agentic Design Patterns (Antonio Gulli)** - 21 patterns implementation
-- **Anthropic Research** - Building Effective Agents, Multi-Agent Research System, Think Tool, MCP
-- **LangGraph** - Production-grade orchestration
-- **MCP Spec** - Progressive discovery, security best practices
+- **Factory.com** — Stage model, metrics, dashboard concepts
+- **Agentic Design Patterns** (Antonio Gulli) — 21 patterns implementation
+- **Anthropic Research** — Building Effective Agents, Think Tool, MCP
+- **LangGraph** — Production-grade orchestration
+- **MCP Spec** — Progressive discovery, security best practices
+
+---
 
 ## 🆘 Support
 
-- GitHub Issues: Bug reports and feature requests
-- Discussions: Architecture questions and community support
-- Docs: Comprehensive guides in `/docs`
+- **GitHub Issues** — Bug reports and feature requests
+- **Discussions** — Architecture questions and community support
+- **Documentation** — Comprehensive guides in `/docs`
+
+---
+
+<div align="center">
+
+**Built with precision. Governed by design.**
+
+*Sentinel Software Factory — From intent to shipped software.*
+
+</div>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" role="img" aria-labelledby="title">
+<title id="title">Sentinel Software Factory — Watchtower</title>
+<rect width="640" height="160" fill="#07111F"/>
+<g transform="translate(34 17)" fill="none" stroke-linecap="square" stroke-linejoin="miter">
+<path d="M14 28 L48 8 L82 28" stroke="#F3F7FC" stroke-width="8"/>
+<path d="M28 42 L48 30 L68 42 L68 58 L48 46 L28 58 Z" fill="#20D9F3" stroke="none"/>
+<path d="M24 106 L24 68 L48 54 L72 68 L72 106 M48 54 V106" stroke="#F3F7FC" stroke-width="7"/>
+<path d="M24 106 L8 116 M72 106 L88 116" stroke="#A9BCD5" stroke-width="5"/>
+</g>
+<text x="160" y="76" fill="#F3F7FC" font-family="Arial,Helvetica,sans-serif" font-size="38" font-weight="700" letter-spacing="8">SENTINEL</text>
+<text x="163" y="108" fill="#A9BCD5" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="6">SOFTWARE FACTORY</text>
+</svg>

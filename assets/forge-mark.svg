@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" role="img" aria-labelledby="title">
+<title id="title">Sentinel Software Factory — Forge Mark</title>
+<rect width="640" height="160" fill="#07111F"/>
+<g transform="translate(34 25)">
+<path d="M18 12 L48 0 L48 22 L28 32 L28 48 L48 38 L48 60 L28 70 L28 86 L48 76 L48 100 L18 88 Z" fill="#F3F7FC"/>
+<path d="M55 0 L86 18 L86 40 L55 22 Z" fill="#20D9F3"/>
+<path d="M55 38 L72 48 L55 58 Z" fill="#A9BCD5"/>
+</g>
+<text x="160" y="76" fill="#F3F7FC" font-family="Arial,Helvetica,sans-serif" font-size="38" font-weight="700" letter-spacing="8">SENTINEL</text>
+<text x="163" y="108" fill="#A9BCD5" font-family="Arial,Helvetica,sans-serif" font-size="15" letter-spacing="6">SOFTWARE FACTORY</text>
+</svg>
